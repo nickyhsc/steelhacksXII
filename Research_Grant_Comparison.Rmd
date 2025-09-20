@@ -1,0 +1,86 @@
+---
+title: "Research Grants Comparison"
+author: "Nicky Chung"
+date: "2025-09-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+grant = read.csv('NDB_ResearchGrants_NIH.csv')
+print(grant)
+```
+
+## Comparison of Research Grant in STEM field
+
+```{r, echo = FALSE}
+suppressMessages(library(plotly))
+
+grant = read.csv('NDB_ResearchGrants_NIH.csv')
+```
+
+### line graph
+
+```{r, echo = FALSE}
+plot_ly() %>%
+  add_trace(x = grant$Year, y = grant$Female,
+            type = "scatter", mode = "lines+markers",
+            name = "Female",
+            line = list(color = "purple"),
+            hovertemplate = "Year: %{x}<br>Female: %{y}<extra></extra>") %>%
+  add_trace(x = grant$Year, y = grant$Male,
+            type = "scatter", mode = "lines+markers",
+            name = "Male",
+            line = list(color = "orange"),
+            hovertemplate = "Year: %{x}<br>Male: %{y}<extra></extra>") %>%
+  layout(title = "Number of Female and Male Research Grants Over the Years",
+         xaxis = list(title = "Year"),
+         yaxis = list(title = "Number of Grants"),
+         legend = list(orientation = "h", x = 0, y = -0.2))
+
+
+```
+
+### bar graph
+
+```{r, echo = FALSE}
+plot_ly(data = grant, x = ~Year, y = ~Female, type = "bar", name = "Female",
+        marker = list(color = "blue")) %>%
+  add_trace(x = grant$Year, y = grant$Male, type = "bar", name = "Male",
+            marker = list(color = "yellow")) %>%
+  layout(title = "Number of Female and Male Research Grants Over the Years",
+         xaxis = list(title = "Year"),
+         yaxis = list(title = "Number of Grants"),
+         barmode = "group") #group: side-by-side bar
+
+```
+
+```{r, echo = FALSE}
+plot_ly(data = grant) %>%
+  add_trace(x = grant$Year, y = grant$Female, type = "bar", name = "Female",
+            marker = list(color = "lightblue")) %>%
+  add_trace(x = grant$Year, y = grant$Male, type = "bar", name = "Male",
+            marker = list(color = "lightgreen")) %>%
+  #trace percentage of female
+  add_trace(x = grant$Year, y = grant$Percentage.to.Female, type = "scatter", mode = "lines+markers",
+            name = "Percentage Female",
+            line = list(color = "orange"),
+            yaxis = "y2",  # Set to secondary y-axis
+            hovertemplate = "Year: %{x}<br>Percentage Female: %{y}<extra></extra>") %>%
+
+  layout(title = "Research Grants Comparison between Female and Male",
+         xaxis = list(title = "Year"),
+         yaxis = list(title = "Number of Grants"),
+         yaxis2 = list(title = "Percentage Female", overlaying = "y", side = "right", 
+                       tickangle = 30, #rotated degree 
+                       ticksuffix = "%", #"%"
+                       tickvals = seq(0, 100, by = 10),  
+                       ticklen = 10,  #add space
+                       tickcolor = "orange"),  
+         barmode = "group",  #group: side-by-side bar
+         margin = list(r = 100), #right margin space
+         legend = list(orientation = "h", x = 0, y = -0.2))
+```
