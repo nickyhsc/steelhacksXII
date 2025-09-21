@@ -1,22 +1,55 @@
-# steelhacksXII
-This project is an interactive website that highlights women's representation in Computer Science using data visualizations, user input, ans team-based storytelling, It was built to showcase official NSF statistics while also giving visitors a chance to share their own coding experiences and goals. The websote contains three main sectionsL the Home page, which introduces the overall mission of making women in CS momre visible; the About page, which introduces the team members and their individual motivations for choosing computer science; and the Graphs page, which contains several interactove vosualizations and Gemini API features.
+# Ctrl+She
 
-The site includes multiple graphs that allow comparisons and deeper insights, A scatter plot displays relationships between women's participation across fields and years, while a comparative bar graph shows how Computer Science compares directly to other STEM majors. The scatter plot shows the median salary for Computer & Information Sciences by sex. The vertical bars are the standard errors (SE) reported in Table 60. They each vary by 4000. Together, these graphs help viewes see both the specific situation of computer science and the wider trens across fields.
+> presenting in steelhacksXII
 
-Beyond the graphs, the project integrates the Gemini API to make the site interactive and personalized. Visitors can share their own background in coding, indicate what they would like to learn, and maybe even test code snippets to receive automated responses. This connects real users' experiences with the statistical story of women in computing reinforcing the project's message that data and personal journeys go hand in hand.
+This project is an interactive website that highlights <mark>women's representation</mark> in <mark>Computer Science</mark> using data visualizations, user input, ans team-based storytelling.
 
-The technology stack used includes HTML, CSS and Javascript on the front end, Plotly.js for data visualizations, and Gemini API for the interactive coding features. Data is drawn from the NSF Budget, awards, and salary. To run this site locally, it is best to use a live server setup such as the VS Code Live Server extension so that both the CSV data and Gemini API can be acessed properly.
+It was built to <mark>showcase official NSF statistics</mark> while also giving visitors a chance to <mark>share their own coding experiences and goals</mark>.
 
-The team consists of four people.
+## 3 main sections for the website
+- Home page: introduces the overall mission of making women in CS momre visible
+- About page: introduces the team members and their individual motivations for choosing computer science
+- Graphs page: contains several interactive visualizations and Gemini API features
 
-Angelina (sophomore): UI / Front-End implemented front-end structure to JavaScript and HTML to optimize user interface link GeminiAI API to the user interface
+### Graphs and Comparisons
+> The site includes multiple graphs that allow comparisons and deeper insights
 
-Nicky (sophomore): Data collection & cleaning / Back-End collecting public sets, cleaning/joining CSVs developing with R and Python, the former for data analysis and the latter for training machine to do data predictions
+#### Founds and Grants
+- The **scatter plot** displays relationships between *total* and *Research & Related Activities (R&RA)*'s budget request and appropriations
 
-Michelle (freshman): UI / Front-End design logo implemented front-end structure to CSS and HTML to optimize user interface
+- The comparative bar graph shows the comparison between **female and male in STEM** in the field of *research grants*
 
-Katie (sophomore): Data collection & cleaning / Back-End collecting public sets, cleaning/joining CSVs developing with R to analyze data into readable graphs
+#### Salary Comparison
+- The **scatter plot** shows the *median salary for Computer & Information Sciences* by sex
 
-Overall, the project combiens statistical data, visualizations, interactivity, adn personal storytelling to highlight women's roles in computing. It is designed to be both informative and engaging, serving as an educational tool and as a reflection of our own journey as students are learning and growing in computer science.
+- The **vertical bars** are the *standard errors (SE) reported in Table 60*. They each vary by 4000. Together, these graphs help viewes see both the specific situation of computer science and the wider trens across fields
 
-contatct us: Angelina: ANR463@pitt.edu Nicky:NIC216@pitt.edu Michelle: MES722@pitt.edu Katie:KAE129@pitt.edu
+### GeminiAI Embedding
+
+Beyond the graphs, the project integrates the Gemini API to make the site interactive and personalized. 
+
+Visitors can share their own background in coding, **indicate what they would like to learn**, and could even **test code snippets to receive automated responses**! 
+This connects real users' experiences with the statistical story of women in computing reinforcing the project's message that data and personal journeys go hand in hand.
+
+
+### Technology stack
+- Front-End:
+  - HTML, CSS, JavaScript, Figma
+- Back-End:
+  - data visualization: Plotly.js
+  - interactive feature: Genimi API
+- Data:
+  - NSF Budget, awards, salary
+- Server:
+  - VS Code, VS Code Live Server extension, RStudio
+
+
+## The Team
+> Our team consists of four people
+
+| Name  | Year | role    | position details| contact us |
+| :---- | :-: | :-------: | :--------: |:---------------:|
+| Angelina | sophomore  |UI / Front-End|- Front-End implemented front-end structure to JavaScript and HTML to optimize user interface <br> - link GeminiAI API to the user interface| ANR463@pitt.edu|
+| Nicky   | sophomore  | Data collection & cleaning / Back-End | - collecting public sets, cleaning/joining CSVs <br> - developing with R and Python, the former for data analysis and the latter for training machine to do data predictions |NIC216@pitt.edu|
+| Michelle | freshman  | UI / Front-End  | - logo design <br> - implemented front-end structure to CSS and HTML to optimize user interface |MES722@pitt.edu|
+| Katie | sophomore  | Data collection & cleaning / Back-End  | - collecting public sets, cleaning/joining CSVs <br> - developing with R to analyze data into readable graphs |KAE129@pitt.edu|
