@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph | Angelina Portfolio</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- No PyScript: menu implemented with pure CSS -->
+</head>
+<body class="graph-page" style="background-color: #EDF2FB; border-color: #FDF88D;">
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="logo" role="button" tabindex="0" aria-label="Home"><img src="image.png" alt="C+S logo"></div>
+            <nav class="nav">
+                <ul>
+                    <!-- main nav intentionally minimal when using burger stack -->
+                </ul>
+            </nav>
+            <button type="button" class="hamburger" aria-label="Open menu">☰</button>
+        </div>
+    </header>
+    <!-- Mobile overlay menu (burger stack) -->
+    <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+        <button class="mobile-close" aria-label="Close menu">✕</button>
+        <nav class="mobile-nav" aria-label="Mobile main">
+            <ul class="menu-list">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="index.html#about">About</a></li>
+                <li><a href="graph.html">Salary Disparity</a></li>
+                <li><a href="graph2.html">Funds & Grants</a></li>
+                <li>
+                    <span class="menu-label">Start your CS journey</span>
+                    <ul class="submenu">
+                        <li><span class="menu-label">Coding demos</span></li>
+                        <li><a href="python.html">Python</a></li>
+                        <li><a href="java.html">Java</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <span class="menu-label">Test your skills</span>
+                    <ul class="submenu">
+                        <li><a href="pythonquiz.html">Python Quiz</a></li>
+                        <li><a href="javaquiz.html">Java Quiz</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    <main>
+                <section id="graph-section">
+                        <h1>NSF Table 60 — CIS Point Plot + All-Fields Boxplot</h1>
+                        <div class="top">
+                            <span id="status" class="muted">Using <code>nsf23319-tab060.csv</code> for rendering.</span>
+                        </div>
+
+                        <div class="grid">
+                            <div class="card">
+                                <h2>CIS — Median Salary ± SE</h2>
+                                <div id="cis" style="width:100%"></div>
+                                <div id="cisNote" class="muted"></div>
+                                <p id="cisDesc" class="muted"></p>
+                            </div>
+                            <div class="card">
+                                <h2>All Fields — Boxplot by Sex</h2>
+                                <div id="box" style="width:100%"></div>
+                                <div id="boxNote" class="muted"></div>
+                                <p id="boxDesc" class="muted"></p>
+                            </div>
+                        </div>
+
+                        <style>
+                            /* Embedded visualization styles (scoped inside #graph-section) */
+                            #graph-section .card{border:1px solid var(--b);border-radius:12px;padding:14px;margin-top:12px;box-shadow:0 1px 2px rgba(0,0,0,.04);background:transparent}
+                            #graph-section .grid{display:grid;gap:16px}
+                            @media(min-width:1000px){#graph-section .grid{grid-template-columns:1fr 1fr}}
+                            #graph-section .muted{color:var(--muted);font-size:.92rem;margin:.5rem 0 0}
+                        </style>
+
+                        <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+                        <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+
+                        <script>
+                        (function(){
+                        const $=id=>document.getElementById(id);
+                        const norm=s=>String(s||'').toLowerCase().replace(/&/g,' and ').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+                        const num=x=>{const n=Number(String(x??'').replace(/[^0-9.]/g,''));return Number.isFinite(n)?n:NaN};
+                        const isSex=s=>['male','female'].includes(norm(s));
+                        const hasDigits=x=>/[0-9]/.test(String(x||''));
+                        const fmt$=v=>'$'+Number(v).toLocaleString(undefined,{maximumFractionDigits:0});
+
+                        function findHeaderStart(rows){
+                            for(let i=0;i<Math.min(150,rows.length);i++){
+                                const v=String(rows[i]?.[0]||'').toLowerCase();
+                                if(v.includes('field of study')) return i;
+                            }
+                            return 0;
+                        }
+
+                        function reconstruct(records){
+                            const out=[]; let acc=[], section=null;
+                            for(const r of records){
+                                const label=(r[0]||'').toString().trim(), sal=r[1], se=r[2];
+                                if(isSex(label)){ if(!section&&acc.length){section=acc.join(' ').trim();acc=[];}
+                                    out.push({section,label,salary_raw:sal,se_raw:se}); continue; }
+                                if(hasDigits(sal)){ section=(acc.concat(label).join(' ').trim())||label||section; acc=[];
+                                    out.push({section,label,salary_raw:sal,se_raw:se}); }
+                                else if(label) acc.push(label);
+                            }
+                            let last=null; for(const r of out){if(r.section) last=r.section; else r.section=last;}
+                            return out;
+                        }
+
+                        function pickCISSection(recs){
+                            const secs=[...new Set(recs.map(r=>r.section).filter(Boolean))];
+                            const cisLike=secs.filter(s=>{const n=norm(s);return n.includes('computer')&&n.includes('inform');});
+                            return cisLike.sort((a,b)=>a.length-b.length).pop()||null;
+                        }
+
+                        function renderCIS(recs){
+                            const sec=pickCISSection(recs);
+                            const rows=sec?recs.filter(r=>r.section===sec&&isSex(r.label)):[];
+                            const data=rows.map(r=>({sex:norm(r.label)==='male'?'Male':'Female',y:num(r.salary_raw),se:num(r.se_raw)}))
+                                                         .filter(d=>Number.isFinite(d.y));
+                            if(!data.length){$('cisNote').textContent='Could not find CIS medians.';Plotly.purge('cis');$('cisDesc').textContent='';return;}
+                            Plotly.newPlot('cis',[{
+                                type:'scatter',mode:'markers',x:data.map(d=>d.sex),y:data.map(d=>d.y),
+                                error_y:{type:'data',array:data.map(d=>Number.isFinite(d.se)?d.se:0),visible:true},
+                                marker:{size:12},hovertemplate:'Sex: %{x}<br>Median: $%{y:,}<extra></extra>'
+                            }],{title:'CIS — Median ± SE',yaxis:{title:'Median salary (USD)',separatethousands:true},
+                                    margin:{t:60,r:20,b:60,l:70}},{responsive:true});
+                            $('cisDesc').textContent = 'Description: This scatter shows the median salary for Computer & Information Sciences by sex. The vertical bars are the standard errors (SE) reported in Table 60.';
+                        }
+
+                        function renderBox(recs){
+                            const rows=recs.map(r=>({sec:r.section||'',sex:isSex(r.label)?(norm(r.label)==='male'?'Male':'Female'):null,y:num(r.salary_raw)}))
+                                                        .filter(r=>r.sex&&Number.isFinite(r.y))
+                                                        .filter(r=>!/^ *(all|total)\b/i.test(r.sec));
+                            const males=rows.filter(r=>r.sex==='Male').map(r=>r.y);
+                            const females=rows.filter(r=>r.sex==='Female').map(r=>r.y);
+                            if(males.length<2||females.length<2){$('boxNote').textContent='Not enough values.';Plotly.purge('box');$('boxDesc').textContent='';return;}
+                            Plotly.newPlot('box',[
+                                {y:females,name:'Female',type:'box',boxpoints:false},
+                                {y:males,name:'Male',type:'box',boxpoints:false}
+                            ],{title:'Median Salaries by Sex — Across Fields',yaxis:{title:'Median salary (USD)',separatethousands:true},
+                                 margin:{t:60,r:20,b:60,l:70}},{responsive:true});
+                            const allVals=males.concat(females);
+                            const overallSpread=Math.max(...allVals)-Math.min(...allVals);
+                            const maleSpread=Math.max(...males)-Math.min(...males);
+                            const femaleSpread=Math.max(...females)-Math.min(...females);
+                            $('boxDesc').textContent = `Description: This boxplot shows the distribution of field-level medians by sex. Variety (max − min) overall is ${fmt$(overallSpread)}. Female spread: ${fmt$(femaleSpread)}; Male spread: ${fmt$(maleSpread)}.`;
+                        }
+
+                        function process(csv){
+                            const start=findHeaderStart(csv);
+                            const rows=csv.slice(start+1);
+                            const recs=reconstruct(rows);
+                            renderCIS(recs); renderBox(recs);
+                        }
+
+                        // Load the CSV from the same folder
+                        fetch('nsf23319-tab060.csv')
+                            .then(res => res.text())
+                            .then(text => {
+                                Papa.parse(text, {
+                                    skipEmptyLines: true,
+                                    complete: res => {
+                                        try { process(res.data); $('status').textContent = ''; }
+                                        catch (err) { console.error(err); $('status').textContent = 'Error: ' + err.message; }
+                                    },
+                                    error: er => { $('status').textContent = 'CSV parse error: ' + er.message; }
+                                });
+                            })
+                            .catch(err => { $('status').textContent = 'Error loading CSV: ' + err.message; });
+
+                        })();
+                        </script>
+
+                </section>
+    </main>
+    <footer>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>

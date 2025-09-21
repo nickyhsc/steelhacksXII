@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ctrl + She</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- No PyScript: menu implemented with pure CSS -->
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="logo" role="button" tabindex="0" aria-label="Home"><img src="image.png" alt="C+S logo"></div>
+            <nav class="nav">
+                <ul>
+                    <!-- main nav intentionally minimal when using burger stack -->
+                </ul>
+            </nav>
+            <button type="button" class="hamburger" aria-label="Open menu">☰</button>
+        </div>
+    </header>
+    <!-- Mobile overlay menu (burger stack) -->
+    <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+        <button class="mobile-close" aria-label="Close menu">✕</button>
+        <nav class="mobile-nav" aria-label="Mobile main">
+            <ul class="menu-list">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="graph.html">Salary Disparity</a></li>
+                <li><a href="graph2.html">Funds & Grants</a></li>
+                <li>
+                    <span class="menu-label">Start your CS journey</span>
+                    <ul class="submenu">
+                        <li><span class="menu-label">Coding demos</span></li>
+                        <li><a href="python.html">Python</a></li>
+                        <li><a href="java.html">Java</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <span class="menu-label">Test your skills</span>
+                    <ul class="submenu">
+                        <li><a href="pythonquiz.html">Python Quiz</a></li>
+                        <li><a href="javaquiz.html">Java Quiz</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    <main>
+        <section class="hero">
+            <img src="IMG_1305.jpg" alt="Person working on laptop" class="hero-image">
+            <div class="hero-content">
+                <div class="hero-title">Ctrl + She</div>
+                <div class="hero-cta">
+                    <button class="cta" id="startBtn">Start Here</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="mission" class="mission">
+            <div class="container">
+                <h2>Our Mission Statement</h2>
+                <div class="mission-lines">
+                    <p>Our mission is to support women in STEM, with a focus on women in computer science, and to raise awareness about the issues that affect them. We also want to provide women with resources to help them succeed in STEM. We will do this by analyzing statistics that affect women in STEM and providing women with resources to help them learn to code.</p>
+                </div>
+            </div>
+        </section>
+
+            <div class="mission-image container">
+                <img src="IMG_1355.jpg" alt="Program participants" />
+            </div>
+
+        <!-- Projects section removed per request -->
+
+        <section id="about" class="about container">
+            <h3>About Us</h3>
+            <div class="about-grid">
+                <div class="about-card"><div class="card-image"> <img src="IMG_2703.jpeg" alt="About Us 1"></div><div class="card-lines"></div></div>
+                <div class="about-card"><div class="card-image"><img src="IMG_7723.jpeg" alt="About Us 2"></div><div class="card-lines"></div></div>
+                <div class="about-card"><div class="card-image"><img src="IMG_9665.jpeg" alt="About Us 3"></div><div class="card-lines"></div></div>
+                <div class="about-card"><div class="card-image"><img src="FullSizeRender.jpg" alt="About Us 4"></div><div class="card-lines"></div></div>
+                <p>Nicky (sophomore) owns data: collecting public sets, cleaning/joining CSVs, and serving a small API with sanity checks. She does CS to make information trustworthy.</p>
+                <P>Michelle (freshman) focuses on HTML/CSS—responsive layouts, consistent typography/colors, and accessible components for cards and tables. She does CS because she loves seeing code instantly become a real page.</p>
+                <p>Angelina (sophomore) leads the dashboard UX—clear charts, readable labels, and basic accessibility for trends like enrollment and retention. She’s in CS to turn messy numbers into useful answers.</p>
+                <p>Katie (sophomore) connects front end to the API, wires chart filters (year, school, outcome), and adds quick tests and user checks. She does CS to ship practical features that help classmates. </p>
+            </div>
+        </section>
+
+        <section id="contact-panel" class="contact-panel container">
+            <h3>Contact Us!</h3>
+            <div class="contact-lines">
+                Angelina: ANR463@pitt.edu<br>
+                Nicky: NIC216@pitt.edu<br>
+                Michelle: MES722@pitt.edu<br>
+                Katie: KAE129@pitt.edu<br>  
+            </div>
+            <div class="contact-bar"></div>
+        </section>
+    </main>
+    <footer>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>

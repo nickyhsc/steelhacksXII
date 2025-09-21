@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Gemini — Python Intro</title>
+<style>
+  body{font-family:sans-serif;margin:20px;color:#111;line-height:1.5}
+  h1{margin:0 0 10px}.muted{color:#666}.ok{color:#065f46}.err{color:#b91c1c}
+  .card{border:1px solid #ddd;border-radius:10px;padding:12px;margin:12px 0;max-width:860px}
+  button,textarea{border:1px solid #ccc;border-radius:8px;padding:.5rem .8rem}
+  button{background:#111;color:#fff;cursor:pointer}textarea{width:100%;min-height:180px;font-family:monospace}
+  pre{background:#fafafa;border:1px solid #eee;border-radius:8px;padding:10px;overflow:auto}
+</style>
+</head>
+<body>
+<h1>Learn Python: Hello World</h1>
+
+<div class="card">
+  <button id="teach">Teach (Gemini)</button>
+  <button id="insert" disabled>Insert Example</button>
+  <span id="status" class="muted"></span>
+  <div id="lesson" hidden>
+    <h3 id="title"></h3>
+    <div id="intro"></div>
+    <ul id="syntax"></ul>
+    <h4>Example Program</h4>
+    <pre><code id="ex"></code></pre>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Your Turn</h3>
+  <button id="checkLocal">Quick check</button>
+  <button id="checkLLM" disabled>Check with Gemini</button>
+  <textarea id="ed" placeholder="Type here..."></textarea>
+  <div id="local" class="muted"></div>
+  <div id="llm" class="muted"></div>
+</div>
+
+<script>
+const API_KEY="AIzaSyA3ij2zQ80fyRtrcLIXz9pFHYW0dI6uhas",MODEL="gemini-2.5-flash";
+const EXAMPLE=`def main():
+    print("Hello, World!")
+
+if __name__ == "__main__":
+    main()
+`;
+const $=s=>document.querySelector(s),st=$("#status"),box=$("#lesson"),tt=$("#title"),
+      intro=$("#intro"),syn=$("#syntax"),ex=$("#ex"),ed=$("#ed"),local=$("#local"),llm=$("#llm");
+
+async function callGemini(prompt){
+  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`,{
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({contents:[{role:"user",parts:[{text:prompt}]}],
+      generationConfig:{responseMimeType:"application/json"}})});
+  const t=(await r.json())?.candidates?.[0]?.content?.parts?.[0]?.text||"";try{return JSON.parse(t)}catch{return null}
+}
+function esc(s){return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")}
+
+$("#teach").onclick=async()=>{
+  st.textContent="Asking Gemini…";$("#teach").disabled=true;
+  const p=`Return JSON ONLY:{
+ "title":"Intro to Python Programming",
+ "intro":[
+   "What coding is: writing precise instructions for computers, early history from ENIAC to C, and how Python emerged in the late 1980s by Guido van Rossum.",
+   "Why Python was created: emphasis on readability, fewer symbols, indentation instead of braces, designed as a beginner-friendly yet powerful language.",
+   "How Python runs: interpreted, line by line execution, interactive REPL, portability across operating systems.",
+   "Core ideas: dynamic typing (variables can change type), batteries-included standard library, large community support."
+ ],
+ "syntax":[
+   "Indentation defines blocks — spaces, not braces.",
+   "def main(): defines a function (entry point).",
+   "print() outputs text to the screen.",
+   "Variables hold numbers, strings, or booleans with no type declaration.",
+   "if/else statements for decisions.",
+   "for/while loops for repetition.",
+   "if __name__ == '__main__': guard to start the program."
+ ],
+ "example_code":"(ignored)"}`
+  try{const j=await callGemini(p);if(!j)throw 0;
+    box.hidden=false;tt.textContent=j.title;
+    intro.innerHTML=j.intro.map(x=>`<p>${esc(x)}</p>`).join("");
+    syn.innerHTML=j.syntax.map(x=>`<li>${esc(x)}</li>`).join("");
+    ex.textContent=EXAMPLE;
+    $("#insert").disabled=$("#checkLLM").disabled=false;st.textContent="Lesson ready."}
+  catch{st.innerHTML='<span class="err">Gemini error.</span>'}
+  $("#teach").disabled=false;
+};
+$("#insert").onclick=()=>{ed.value=EXAMPLE;local.textContent="Inserted example."};
+
+$("#checkLocal").onclick=()=>{
+  const c=ed.value,hasMain=/def\s+main\s*\(\s*\)\s*:/i.test(c),
+        hasPrint=/print\s*\(\s*["']Hello,\s*World!?["']\s*\)/.test(c),
+        hasGuard=/if\s+__name__\s*==\s*['"]__main__['"]/.test(c),
+        pass=hasMain&&hasPrint&&hasGuard;
+  local.innerHTML=(pass?'<span class="ok">Local check passed</span>':'<span class="err">Local check failed</span>')+
+    `<div>${row(hasMain,"def main()")}${row(hasPrint,"print")}${row(hasGuard,"if __name__ guard")}</div>`;
+};
+function row(ok,l){return `<div class="${ok?'ok':'err'}">${ok?'✓':'✗'} ${l}</div>`}
+
+$("#checkLLM").onclick=async()=>{
+  const code=ed.value.trim();if(!code){llm.innerHTML='<span class="err">Type code first.</span>';return}
+  llm.textContent="Checking…";$("#checkLLM").disabled=true;
+  const rubric=`Return JSON ONLY:{"pass":true|false,"summary":"one sentence"} PASS if prints Hello, World! using def main()+guard. ===CODE===${code}`
+  try{const j=await callGemini(rubric);llm.innerHTML=j?.pass?`<span class="ok">PASS — ${esc(j.summary||"")}</span>`:'<span class="err">NOT YET</span>'}
+  catch{llm.innerHTML='<span class="err">Gemini error.</span>'}
+  $("#checkLLM").disabled=false;
+};
+</script>
+</body>
+</html>

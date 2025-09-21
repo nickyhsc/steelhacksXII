@@ -1,0 +1,95 @@
+---
+title: "NSF Table 60 — CIS Point Plot + All-Fields Boxplot"
+output: html_document
+---
+
+```{r}
+# ===== Clean slate =====
+rm(list = ls()); invisible(gc())
+
+
+
+# ===== Load CSV (skip banner lines) =====
+csv_path <- "/Users/katieerfort/Downloads/nsf23319-tab060.csv"
+raw <- readr::read_csv(csv_path, skip = 7, show_col_types = FALSE) |>
+  janitor::clean_names()
+
+# ===== Identify key columns =====
+label_col <- names(raw)[1]   # e.g., field_of_study_and_sex
+sal_col   <- names(raw)[2]   # 1st salary col  -> All full-time employed (Median)
+se_col    <- names(raw)[3]   # 1st SE col      -> SE for that median
+
+tbl <- raw |>
+  select(all_of(c(label_col, sal_col, se_col))) |>
+  rename(label = !!label_col, salary_raw = !!sal_col, se_raw = !!se_col)
+
+# Helper to detect numeric-like cells
+is_num <- function(x) suppressWarnings(!is.na(as.numeric(gsub("[^0-9.]", "", x))))
+
+# ===== Rebuild multi-line section headers (e.g., "Computer and information sciences") =====
+section <- character(nrow(tbl)); acc <- character(0); current_sec <- NA_character_
+for (i in seq_len(nrow(tbl))) {
+  lbl <- as.character(tbl$label[i]); s <- tbl$salary_raw[i]
+  if (lbl %in% c("Male","Female")) {
+    if (length(acc)) { current_sec <- stringr::str_squish(paste(acc, collapse=" ")); acc <- character(0) }
+    section[i] <- current_sec
+  } else {
+    if (is_num(s)) {
+      current_sec <- stringr::str_squish(paste(c(acc,lbl), collapse=" ")); acc <- character(0)
+      section[i] <- current_sec
+    } else {
+      acc <- c(acc,lbl); section[i] <- NA_character_
+    }
+  }
+}
+for (i in seq_len(nrow(tbl))) if (is.na(section[i]) && i > 1) section[i] <- section[i-1]
+
+tbl$section <- stringr::str_squish(section)
+tbl$sex     <- ifelse(tbl$label %in% c("Male","Female"), tbl$label, NA_character_)
+tbl$salary  <- suppressWarnings(as.numeric(gsub("[^0-9.]", "", tbl$salary_raw)))
+tbl$se      <- suppressWarnings(as.numeric(gsub("[^0-9.]", "", tbl$se_raw)))
+
+# ===== 1) CIS point plot (median ± SE, All full-time employed) =====
+cis_mask <- grepl("computer.*information|information.*computer", tbl$section, ignore.case = TRUE)
+cis_rows <- tbl |>
+  filter(cis_mask, !is.na(sex), !is.na(salary))
+
+p_cis <- plot_ly(
+  data = cis_rows,
+  x = ~sex, y = ~salary,
+  type = "scatter", mode = "markers",
+  marker = list(size = 12),
+  error_y = list(type = "data", array = ~se, visible = TRUE),
+  hovertemplate = "Sex: %{x}<br>Median: $%{y:,}<br>SE: %{customdata}<extra></extra>",
+  customdata = ~se
+) %>%
+  layout(
+    title = "Computer & Information Sciences — Median Salary ± SE (All full-time employed)",
+    yaxis = list(title = "Median salary (USD)", separatethousands = TRUE)
+  )
+
+p_cis
+# ===== 2) All-fields boxplot (Male vs Female distributions across fields; no dots) =====
+# Build per-field dataset and drop grand rollups like "All fields"/"Total"
+df_all <- tbl |>
+  filter(!is.na(sex), !is.na(salary)) |>
+  mutate(field = section) |>
+  filter(!grepl("^\\s*(all|total)\\b", field, ignore.case = TRUE))
+
+# Optional sanity check
+cat("N per sex across fields:\n"); print(table(df_all$sex))
+
+p_box <- plot_ly(
+  data = df_all,
+  x = ~sex, y = ~salary,
+  type = "box",
+  boxpoints = FALSE  # hide dots per your preference
+) %>%
+  layout(
+    title = "Median Salaries by Sex — Across Fields (All full-time employed)",
+    yaxis = list(title = "Median salary (USD)", separatethousands = TRUE)
+  )
+
+p_box
+
+```

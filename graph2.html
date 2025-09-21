@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph | Angelina Portfolio</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- No PyScript: menu implemented with pure CSS -->
+</head>
+<body style="background-color: #D7E3FC;">
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="logo" role="button" tabindex="0" aria-label="Home"><img src="image.png" alt="C+S logo"></div>
+            <nav class="nav">
+                <ul>
+                    <!-- main nav intentionally minimal when using burger stack -->
+                </ul>
+            </nav>
+            <button type="button" class="hamburger" aria-label="Open menu">☰</button>
+        </div>
+    </header>
+    <!-- Mobile overlay menu (burger stack) -->
+    <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+        <button class="mobile-close" aria-label="Close menu">✕</button>
+        <nav class="mobile-nav" aria-label="Mobile main">
+            <ul class="menu-list">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="index.html#about">About</a></li>
+                <li><a href="graph.html">Salary Disparity</a></li>
+                <li><a href="graph2.html">Funds & Grants</a></li>
+                <li>
+                    <span class="menu-label">Start your CS journey</span>
+                    <ul class="submenu">
+                        <li><span class="menu-label">Coding demos</span></li>
+                        <li><a href="python.html">Python</a></li>
+                        <li><a href="java.html">Java</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <span class="menu-label">Test your skills</span>
+                    <ul class="submenu">
+                        <li><a href="pythonquiz.html">Python Quiz</a></li>
+                        <li><a href="javaquiz.html">Java Quiz</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    <main>
+        <section id="graph-section">
+            <canvas id="graphCanvas" width="800" height="400"></canvas>
+            <style>
+                .my-rectangle {
+                    width: 100%;
+                    max-width: 1100px;
+                    height: 1600px; /* visible window */
+                    margin: -250px auto 0 auto;
+                    margin-top:-370px;
+                    overflow: hidden;
+                    position: relative;
+                }
+                .my-rectangle iframe{width:100%;border:0;display:block;position:relative}
+            </style>
+            <div class="my-rectangle" role="region" aria-label="Research content">
+                <iframe id="researchIframe" src="founds_research_merge.html" title="Founds Research Merge"></iframe>
+            </div>
+            <script>
+            (function(){
+                const iframe = document.getElementById('researchIframe');
+                if(!iframe) return;
+
+                function setHeight(h){
+                    iframe.style.height = h + 'px';
+                }
+
+                function resizeIframe(){
+                    try{
+                        const doc = iframe.contentDocument || iframe.contentWindow.document;
+                        if(!doc) return;
+                        const height = Math.max(doc.documentElement.scrollHeight||0, doc.body.scrollHeight||0);
+                        if (height && iframe.clientHeight !== height) setHeight(height);
+                    }catch(e){
+                        // cross-origin or not ready — silently fail
+                    }
+                }
+
+                iframe.addEventListener('load', function(){
+                    resizeIframe();
+                    try{
+                        const doc = iframe.contentDocument || iframe.contentWindow.document;
+                        if(!doc) return;
+                        const mo = new MutationObserver(resizeIframe);
+                        mo.observe(doc.documentElement || doc.body, {childList:true,subtree:true,attributes:true});
+                        // also resize on images/fonts loading inside the iframe
+                        window.addEventListener('resize', resizeIframe);
+                        // apply upward offset so the iframe content is shifted up inside the visible window
+                        iframe.style.position = 'relative';
+                        iframe.style.top = '-200px';
+                    }catch(e){/* ignore */}
+                });
+
+                // Attempt a couple of delayed resizes in case assets load slowly
+                setTimeout(resizeIframe, 250);
+                setTimeout(resizeIframe, 1200);
+            })();
+            </script>
+            <style>
+                .graph-button{
+                    max-width:1100px;
+                    margin:1.5rem auto 2rem auto;
+                    display:flex;
+                    justify-content:center;
+                    align-items:center;
+                }
+                .graph-button a{display:inline-block}
+            </style>
+            <div class="graph-button">
+                <a href="test.html" data-start class="start-link">
+                    <button type="button" class="cta" id="testSkills">Test Your Skills</button>
+                </a>
+            </div>
+        </section>
+    </main>
+    <footer>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>

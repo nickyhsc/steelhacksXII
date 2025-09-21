@@ -1,0 +1,71 @@
+---
+title: "Hackathon — NSF vs STEM EDU"
+author: "KatieErfort"
+date: "09/20/25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r packages}
+library(readxl)
+library(plotly)
+```
+
+```{r load-data}
+fname <- "/Users/katieerfort/Desktop/nsf_budget_request_full33.xlsx"
+
+df <- read_excel(fname)
+```
+
+```{r clean-and-plot, message=FALSE, warning=FALSE}
+
+yr_raw <- as.character(df$`Fiscal Year`)
+drop_idx <- grepl("ARRA", yr_raw, ignore.case = TRUE) | grepl("Plans", yr_raw, ignore.case = TRUE)
+df_clean <- df[!drop_idx, ]
+
+# Extract the 4-digit year
+year_num <- suppressWarnings(as.numeric(sub("^\\s*(\\d{4}).*$", "\\1", df_clean$`Fiscal Year`)))
+
+# Columns to numeric
+nsf_app   <- suppressWarnings(as.numeric(df_clean$`NSF Total Appropriation`))
+stem_app  <- suppressWarnings(as.numeric(df_clean$`STEM EDU Appropriation`))
+nsf_req   <- suppressWarnings(as.numeric(df_clean$`NSF Total Request`))
+stem_req  <- suppressWarnings(as.numeric(df_clean$`STEM EDU Request`))
+
+# Fill missing Appropriations with Requests (so lines continue to 2025)
+nsf_fill  <- ifelse(is.na(nsf_app),  nsf_req,  nsf_app)
+stem_fill <- ifelse(is.na(stem_app), stem_req, stem_app)
+
+# Keep valid years with at least one value
+keep <- !is.na(year_num) & (!is.na(nsf_fill) | !is.na(stem_fill))
+yr   <- year_num[keep]
+nsf  <- nsf_fill[keep]
+stem <- stem_fill[keep]
+
+# Sort chronologically
+o <- order(yr)
+yr <- yr[o]; nsf <- nsf[o]; stem <- stem[o]
+
+# Convert to millions for plotting
+nsf_m  <- nsf / 1000
+stem_m <- stem / 1000
+
+# Plot interactive two-line chart (y axis in millions, 2 decimals)
+plot_ly() %>%
+  add_trace(x = yr, y = nsf_m, type = "scatter", mode = "lines+markers",
+            name = "NSF",
+            line = list(color = "blue"),
+            hovertemplate = "Year %{x}<br>NSF: %{y:.2f} M<extra></extra>") %>%
+  add_trace(x = yr, y = stem_m, type = "scatter", mode = "lines+markers",
+            name = "STEM EDU",
+            line = list(color = "orange"),
+            hovertemplate = "Year %{x}<br>STEM EDU: %{y:.2f} M<extra></extra>") %>%
+  layout(title = "NSF vs STEM EDU",
+         xaxis = list(title = "Fiscal Year", dtick = 2),
+         yaxis = list(title = "Budget (Millions USD)",
+                      tickformat = ".2f"),  # show 2 decimals
+         legend = list(orientation = "h", x = 0, y = -0.2))
+```

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Java — CRTL+SHE</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="java-page">
+    <header class="site-header">
+        <div class="container header-inner">
+            <div class="logo" role="button" tabindex="0" aria-label="Home"><img src="image.png" alt="C+S logo"></div>
+
+            <!-- visible hamburger button -->
+            <button type="button" class="hamburger" aria-label="Open menu">
+                <span class="hamburger-box">
+                    <span class="hamburger-inner"></span>
+                </span>
+            </button>
+        </div>
+    </header>
+
+    <!-- compact right-side burger stack panel (matches other pages) -->
+    <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+        <button class="mobile-close" aria-label="Close menu">✕</button>
+        <nav class="mobile-nav" aria-label="Mobile main">
+            <ul class="menu-list">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="index.html#about">About</a></li>
+                <li><a href="graph.html">Salary Disparity</a></li>
+                <li><a href="graph2.html">Funds & Grants</a></li>
+                <li>
+                    <span class="menu-label">Start your CS journey</span>
+                    <ul class="submenu">
+                        <li><span class="menu-label">Coding demos</span></li>
+                        <li><a href="python.html">Python</a></li>
+                        <li><a href="java.html">Java</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <span class="menu-label">Test your skills</span>
+                    <ul class="submenu">
+                        <li><a href="pythonquiz.html">Python Quiz</a></li>
+                        <li><a href="javaquiz.html">Java Quiz</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <main>
+
+
+
+
+            <section class="content container">
+                <h2>Java Quiz</h2>
+                <p>Generate a Java quiz!</p>
+                <div class="embed-card">
+                    <iframe id="javaGeminiFrame" src="javaGemini.html" title="Gemini Java Quiz" frameborder="0" scrolling="no" style="width:100%;height:720px;max-width:980px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.08);"></iframe>
+                </div>
+            </section>
+    </main>
+
+    <script src="script.js"></script>
+        <script>
+            // Auto-resize same-origin iframe to fit content height.
+            (function(){
+                const frame = document.getElementById('javaGeminiFrame');
+                if (!frame) return;
+
+                function resize() {
+                    try {
+                        const doc = frame.contentDocument || frame.contentWindow.document;
+                        if (!doc) return;
+                        const h = Math.max(doc.documentElement.scrollHeight, doc.body.scrollHeight);
+                        frame.style.height = (h + 24) + 'px';
+                    } catch (e) {
+                        console.warn('Could not auto-resize javaGemini iframe:', e.message);
+                    }
+                }
+
+                frame.addEventListener('load', () => {
+                    resize();
+                    try {
+                        const doc = frame.contentDocument || frame.contentWindow.document;
+                        const mo = new MutationObserver(resize);
+                        mo.observe(doc.documentElement || doc.body, {childList:true,subtree:true,characterData:true});
+                    } catch (e) { /* ignore */ }
+                });
+
+                window.addEventListener('resize', () => setTimeout(resize, 120));
+            })();
+        </script>
+</body>
+</html>

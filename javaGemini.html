@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Gemini Java Quiz (Click to Generate)</title>
+<style>
+  :root{--b:#e5e7eb;--m:#6b7280;--fg:#111827}
+  body{font-family:system-ui,Arial,sans-serif;margin:22px;color:var(--fg)}
+  h1{margin:0 0 12px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0 14px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:.25rem 0}
+  .chip{padding:.45rem .7rem;border:1px solid var(--b);border-radius:999px;background:#fff;cursor:pointer}
+  .chip.active{background:#111827;color:#fff;border-color:#111827}
+  select,input,button{border:1px solid var(--b);border-radius:10px;padding:.5rem .7rem}
+  button{background:#111827;color:#fff;cursor:pointer}
+  .card{border:1px solid var(--b);border-radius:12px;padding:14px;margin-top:14px;max-width:900px}
+  .muted{color:#6b7280}
+  .correct{color:#065f46}
+  .wrong{color:#b91c1c}
+  .q{margin:14px 0}
+  .q label{display:block;margin:.15rem 0}
+</style>
+</head>
+<body>
+  <h1>Gemini-powered Java Quiz</h1>
+
+  <div class="row">
+    <div class="chips" id="topics"></div>
+  </div>
+
+  <div class="row">
+    <input id="custom" placeholder="Or type your own topic (e.g., Java concurrency)"/>
+    <select id="level">
+      <option>Beginner</option><option selected>Intermediate</option><option>Advanced</option>
+    </select>
+    <select id="num"><option>5</option><option selected>8</option><option>10</option></select>
+    <button id="go">Generate quiz</button>
+    <span id="status" class="muted"></span>
+  </div>
+
+  <div id="quiz" class="card"></div>
+
+<script>
+const API_KEY = "AIzaSyA3ij2zQ80fyRtrcLIXz9pFHYW0dI6uhas"; // demo key you provided
+const MODEL   = "gemini-2.5-flash";  // fast & inexpensive
+
+// Topic chips
+const DEFAULT_TOPICS = [
+  "OOP basics (classes, interfaces, inheritance)",
+  "Exceptions & error handling",
+  "Collections & Generics",
+  "Streams & Lambdas",
+  "Concurrency & Threading",
+  "JVM, memory, and GC",
+  "File I/O & Serialization",
+  "Testing with JUnit",
+  "Algorithms & Big-O (Java)"
+];
+const topicsEl = document.getElementById("topics");
+let chosenTopic = DEFAULT_TOPICS[0];
+DEFAULT_TOPICS.forEach((t, i) => {
+  const b = document.createElement("button");
+  b.textContent = t; b.className = "chip" + (i===0?" active":"");
+  b.onclick = () => {
+    [...topicsEl.children].forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    chosenTopic = t;
+    document.getElementById("custom").value = "";
+  };
+  topicsEl.appendChild(b);
+});
+
+document.getElementById("go").addEventListener("click", async () => {
+  const custom = document.getElementById("custom").value.trim();
+  const topic  = custom || chosenTopic;
+  const num    = Number(document.getElementById("num").value);
+  const level  = document.getElementById("level").value;
+  const status = document.getElementById("status");
+  const out    = document.getElementById("quiz");
+  status.textContent = "Generating…";
+  out.innerHTML = "";
+
+  const prompt = `Create a ${num}-question multiple-choice QUIZ on Java (${topic}), difficulty: ${level}.
+Return STRICT JSON ONLY (no prose, no markdown), exactly:
+{
+  "title": "string",
+  "questions": [
+    {"q":"string","choices":["A","B","C","D"],"answer":0,"explain":"string"}
+  ]
+}
+Rules:
+- 4 answer choices per question (A..D).
+- Keep questions concise and unambiguous; avoid trivia and trick wording.
+- 'answer' must be the 0-based index of the correct choice.
+- 'explain' is 1 short sentence explaining why the answer is correct.
+- Do not include backticks or code fences. JSON only.`;
+
+  try {
+    const resp = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/" + MODEL + ":generateContent?key=" + encodeURIComponent(API_KEY),
+      {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          contents: [{role:"user", parts:[{text: prompt}]}],
+          generationConfig: { responseMimeType: "application/json" } // ask for JSON mode
+        })
+      }
+    );
+    const data = await resp.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+    const quiz = parseMaybeJSON(text);
+    if (!quiz?.questions) throw new Error("Unexpected response format.");
+    renderQuiz(quiz);
+    status.textContent = "Done.";
+  } catch (e) {
+    console.error(e);
+    status.textContent = "Error: " + e.message;
+  }
+});
+
+function parseMaybeJSON(s){
+  try { return JSON.parse(s); } catch {}
+  const m = s.match(/```json\s*([\s\S]*?)```/i) || s.match(/```\s*([\s\S]*?)```/);
+  if (m) { try { return JSON.parse(m[1]); } catch {} }
+  return null;
+}
+
+function renderQuiz({title, questions}){
+  const box = document.getElementById("quiz");
+  const h = document.createElement("h2"); h.textContent = title || "Java Quiz"; box.appendChild(h);
+
+  questions.forEach((q, qi) => {
+    const sec = document.createElement("section"); sec.className = "q";
+    const p = document.createElement("p"); p.innerHTML = `<strong>Q${qi+1}.</strong> ${q.q}`; sec.appendChild(p);
+
+    q.choices.forEach((c, ci) => {
+      const label = document.createElement("label");
+      label.innerHTML = `<input type="radio" name="q${qi}" value="${ci}"> ${c}`;
+      sec.appendChild(label);
+    });
+
+    const fb = document.createElement("div"); fb.className = "muted"; fb.style.marginTop = "6px";
+    const btn = document.createElement("button"); btn.textContent = "Check";
+    btn.onclick = () => {
+      const pick = sec.querySelector(`input[name="q${qi}"]:checked`);
+      if (!pick) { fb.textContent = "Pick an answer."; fb.className="muted"; return; }
+      const correct = Number(q.answer);
+      if (Number(pick.value) === correct) {
+        fb.textContent = "Correct! " + (q.explain||""); fb.className = "correct";
+      } else {
+        fb.textContent = `Not quite. Correct: ${q.choices[correct]}. ` + (q.explain||"");
+        fb.className = "wrong";
+      }
+    };
+
+    sec.appendChild(btn);
+    sec.appendChild(fb);
+    box.appendChild(sec);
+  });
+
+  // Score all button
+  const scoreBtn = document.createElement("button"); scoreBtn.textContent = "Score all";
+  const scoreLine = document.createElement("span"); scoreLine.className="muted"; scoreLine.style.marginLeft="8px";
+  scoreBtn.onclick = () => {
+    let right = 0;
+    questions.forEach((q, qi) => {
+      const pick = document.querySelector(`input[name="q${qi}"]:checked`);
+      if (pick && Number(pick.value) === Number(q.answer)) right++;
+    });
+    scoreLine.textContent = `Score: ${right}/${questions.length}`;
+  };
+  box.appendChild(scoreBtn); box.appendChild(scoreLine);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,226 @@
+/* Basic reset and variables */
+:root{
+  --bg:#EDF2FB;
+  --accent:#1f2937;
+  --muted:#9aa4ad;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
+body{background:var(--bg);color:var(--accent);line-height:1.5}
+.container{max-width:1100px;margin:0 auto;padding:2rem}
+
+/* Header */
+.site-header{position:fixed;top:0;left:0;right:0;background:rgba(255,255,255,0.6);backdrop-filter:blur(6px);border-bottom:1px solid rgba(0,0,0,0.05);z-index:50}
+.header-inner{display:flex;align-items:center;justify-content:space-between;padding:0.9rem 1rem;max-width:1100px;margin:0 auto}
+.logo{font-weight:700;background:#fff;border-radius:50%;width:72px;height:72px;display:flex;align-items:center;justify-content:center;color:var(--accent);box-shadow:0 6px 18px rgba(0,0,0,0.08);overflow:hidden}
+.logo img{width:64px;height:64px;object-fit:cover;border-radius:50%;display:block}
+/* site title next to logo */
+.site-title{font-weight:800;margin-left:0.75rem;font-size:1.05rem;color:var(--accent)}
+/* Logo hover/focus: subtle scale up for feedback across all pages */
+.logo{transition:transform .28s cubic-bezier(.2,.9,.25,1),box-shadow .28s cubic-bezier(.2,.9,.25,1)}
+.logo img{transition:transform .28s cubic-bezier(.2,.9,.25,1)}
+.logo:hover img,.logo:focus-within img{transform:scale(1.25)}
+.logo:focus-within{outline:3px solid rgba(59,130,246,0.14);outline-offset:4px;border-radius:50%}
+.nav ul{display:flex;gap:1rem;list-style:none;margin:0;padding:0}
+.nav a{text-decoration:none;color:var(--accent);font-weight:600}
+.hamburger{display:block;border:0;background:transparent;font-size:1.4rem;cursor:pointer}
+
+/* Hero */
+.hero{position:relative;height:85vh;min-height:520px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-top:calc(72px + 1.8rem);
+  /* background image for CSS-only parallax-like effect */
+  background-image: url('IMG_1305.jpg');
+  background-size: cover;
+  /* shift image down so more of the lower part of the photo shows */
+  background-position: center 85%;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+/* hide the inline image (we use the background instead) */
+.hero-image{display:none}
+
+.hero-content{position:relative;z-index:2;display:flex;align-items:center;justify-content:center}
+.hero-cta{display:flex;justify-content:center}
+
+/* Hero title overlaid on the image */
+.hero-title{position:absolute;top:28%;left:50%;transform:translateX(-50%);font-size:2.4rem;font-weight:800;color:#ffffff;text-shadow:0 6px 22px rgba(6,12,34,0.48);letter-spacing:0.6px;white-space:nowrap}
+/* increase gap between title and CTA */
+.hero-cta{margin-top:6.5rem}
+@media(max-width:800px){
+  .hero-title{font-size:1.6rem;top:24%}
+  .hero-cta{margin-top:4rem}
+}
+.cta{background:#fff;border:0;padding:0.6rem 1rem;border-radius:0;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+/* CTA styling: subtle border, shadow, hover and focus styles */
+.cta{
+  background:linear-gradient(180deg,#EDF2FB,#f7f9fc);
+  border:1px solid rgba(31,41,55,0.06);
+  box-shadow:0 6px 18px rgba(31,41,55,0.06);
+  transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
+}
+.cta:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(31,41,55,0.09), 0 0 20px rgba(59,130,246,0.14);background:linear-gradient(180deg,#ffffff,#f0f6ff)}
+.cta:active{transform:translateY(-1px)}
+.cta:focus{outline:3px solid rgba(59,130,246,0.18);outline-offset:3px;box-shadow:0 8px 24px rgba(59,130,246,0.12)}
+
+/* Mission */
+.mission{background:#eef4fb;padding:4rem 0}
+.mission h2{font-size:1.75rem;margin:0 0 1.25rem}
+.mission-lines{display:grid;gap:0.75rem}
+.mission-lines .line{height:14px;background:linear-gradient(90deg,#dfe8ef,#e9eef4);border-radius:6px}
+.mission-lines .line:nth-child(1){width:90%}
+.mission-lines .line:nth-child(2){width:80%}
+.mission-lines .line:nth-child(3){width:95%}
+.mission-lines .line:nth-child(4){width:70%}
+.mission-lines .line:nth-child(5){width:85%}
+/* Center and size the mission image responsively */
+.mission-image {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 100%;
+  height: auto;
+}
+
+.mission-image img{max-width:100%;width:880px;height:auto;border-radius:8px;box-shadow:0 12px 30px rgba(6,12,34,0.08)}
+
+/* Projects & contact small styles */
+.projects h3,.contact h3{margin-top:0}
+
+/* About grid */
+.about{padding-block:4rem}
+.about h3{margin-bottom:1.25rem;font-size:1.75rem;font-weight:700;color:var(--accent);position:relative;padding-bottom:0}
+/* Decorative underline removed per request */
+.about h3::after{content:'';display:none}
+.about-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+.about-card{background:transparent;padding:0}
+.card-image{height:240px;background:linear-gradient(180deg,#e6f2ff,#dbeeff);border-radius:8px;overflow:hidden;display:block}
+.card-image img{width:100%;height:100%;object-fit:cover;display:block}
+.card-lines{margin-top:0.6rem;display:flex;flex-direction:column;gap:0.5rem}
+.card-lines div{height:12px;background:linear-gradient(90deg,#dfe8ef,#e9eef4);border-radius:6px}
+.card-lines div:nth-child(1){width:85%}
+.card-lines div:nth-child(2){width:70%}
+.card-lines div:nth-child(3){width:90%}
+
+/* Contact panel */
+.contact-panel{padding:3rem 0;text-align:center}
+.contact-panel h3{margin-bottom:1.25rem}
+.contact-lines{display:flex;flex-direction:column;gap:0.75rem;align-items:center;margin:1rem 0}
+.contact-lines .line{height:12px;background:linear-gradient(90deg,#dfe8ef,#e9eef4);border-radius:6px;width:80%}
+.contact-lines .line.medium{width:60%}
+.contact-lines .line.long{width:90%}
+.contact-bar{height:14px;background:#e9eef4;border-radius:4px;margin-top:1rem;width:90%}
+
+/* Footer */
+.site-footer{padding:2rem 0;text-align:center;color:var(--muted);font-size:0.95rem}
+
+/* Responsive */
+@media (max-width:800px){
+  /* do not hide the main nav — keep burger stack available in all views */
+  /* mobile: keep hero smaller but still show more image */
+  .hero{height:60vh;min-height:360px;margin-top:calc(56px + 1rem)}
+  .header-inner{padding:0.5rem 1rem}
+  .logo{width:56px;height:56px}
+  .logo img{width:44px;height:44px}
+  .container{padding:1rem}
+  .about-grid{grid-template-columns:repeat(2,1fr);gap:0.75rem}
+  .card-image{height:180px}
+}
+
+/* Disable fixed background on mobile (better compatibility and performance) */
+@media (max-width:800px){
+  .hero{background-attachment:scroll}
+}
+
+/* Mobile burger stack as a compact right-side panel (doesn't fill the page) */
+.mobile-menu{position:fixed;top:64px;right:1rem;left:auto;width:min(420px,85vw);max-height:calc(100vh - 96px);background:#fff;border-radius:10px;display:flex;flex-direction:column;align-items:flex-start;padding:1.5rem;transform:translateX(8rem);opacity:0;pointer-events:none;transition:opacity .25s cubic-bezier(.2,.9,.3,1),transform .3s cubic-bezier(.2,.9,.3,1);box-shadow:0 12px 30px rgba(0,0,0,0.12);z-index:200}
+.mobile-menu.open{transform:translateX(0);opacity:1;pointer-events:auto}
+.mobile-close{position:absolute;right:0.75rem;top:0.5rem;background:transparent;border:0;font-size:1.25rem;padding:0.25rem;cursor:pointer}
+.mobile-nav{width:100%;max-width:420px;margin-right:0}
+.menu-list{list-style:none;padding:1rem 0;margin:0;display:flex;flex-direction:column;gap:1.25rem;width:100%;align-items:flex-start}
+.menu-list a{color:var(--accent);text-decoration:none;font-weight:600;padding-left:0.25rem;font-size:1.05rem}
+.menu-label{color:var(--accent);font-weight:600;padding-left:0.25rem;font-size:1.05rem;cursor:default}
+.menu-list .submenu{list-style:none;padding-left:1.25rem;margin-top:0.5rem;display:flex;flex-direction:column;gap:0.5rem}
+.menu-list li{font-size:1rem}
+
+/* Larger, more spaced main items to mimic the mock */
+.menu-list > li{width:100%;text-align:left;padding-left:0}
+.menu-list > li > a{font-size:1.05rem}
+.menu-list .submenu li a{font-size:0.95rem;color:var(--muted)}
+
+/* Visual spacing to mimic mock */
+.menu-list li:first-child{margin-top:0}
+
+/* Make hamburger focusable */
+.hamburger{cursor:pointer}
+.hamburger:focus{outline:2px solid rgba(31,41,55,0.12);outline-offset:3px;border-radius:4px}
+
+/* Hamburger icon visuals */
+.hamburger{width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center}
+.hamburger-box{display:inline-block;width:22px;height:16px;position:relative}
+.hamburger-inner{position:absolute;top:50%;left:0;right:0;height:2px;background:var(--accent);transform:translateY(-50%)}
+.hamburger-inner::before,.hamburger-inner::after{content:'';position:absolute;left:0;right:0;height:2px;background:var(--accent)}
+.hamburger-inner::before{top:-7px}
+.hamburger-inner::after{bottom:-7px}
+
+/* Mobile menu visible when .open is present (JS toggles this class) */
+.mobile-menu{transform:translateY(-6%);opacity:0;pointer-events:none}
+.mobile-menu.open{transform:translateY(0);opacity:1;pointer-events:auto}
+.mobile-close{font-weight:700}
+
+
+/* Utility */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+.graph-section{
+  position:relative;
+  justify-content:center;
+}
+
+/* Page-specific backgrounds */
+body.python-page, body.java-page {
+  background: #abc4ff;
+}
+
+/* Ensure anchor targets are not hidden under the fixed header when navigated to */
+#about { scroll-margin-top: calc(72px + 12px); }
+@media (max-width:800px) {
+  #about { scroll-margin-top: calc(56px + 12px); }
+}
+
+/* Ensure page content is not hidden under the fixed header on pages without a hero */
+body.python-page main,
+body.java-page main {
+  padding-top: 64px;
+}
+
+/* Test page styling to match Python/Java pages */
+body.test-page {
+  background: #abc4ff;
+}
+body.test-page main { padding-top: 64px; }
+
+/* Offset main content on the graph page so header doesn't cover content */
+body.graph-page main { padding-top: 80px; }
+@media (max-width:800px){
+  body.graph-page main { padding-top: 64px; }
+}
+
+/* Graph section rectangle styling */
+#graph-section{
+  max-width:1100px;
+  margin:2rem auto;
+  background:linear-gradient(180deg,#ffffff,#f6fbff);
+  border:3px solid #FDF88D;
+  outline: 1px solid rgba(255,255,255,0.6);
+  box-shadow:0 28px 60px rgba(253,248,141,0.12), inset 0 1px 0 rgba(255,255,255,0.95);
+  border-radius:14px;
+  padding:1.5rem;
+}
+#graph-section .grid{gap:1rem}
+#graph-section .card{padding:0;margin:0;background:transparent;border:none}
+#graph-section #cis, #graph-section #box{height:420px}
+
+@media(max-width:800px){
+  #graph-section{padding:0.75rem;margin:1rem;}
+  #graph-section #cis, #graph-section #box{height:320px}
+}
