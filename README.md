@@ -2,7 +2,7 @@
 
 > presenting in steelhacksXII
 
-This project is an interactive website that highlights <mark>women's representation</mark> in <mark>Computer Science</mark> using data visualizations, user input, ans team-based storytelling.
+This project is an interactive website that highlights <mark>women's representation</mark> in <mark>technology field</mark> using data visualizations, user input, ans team-based storytelling.
 
 It was built to <mark>showcase official NSF statistics</mark> while also giving visitors a chance to <mark>share their own coding experiences and goals</mark>.
 
