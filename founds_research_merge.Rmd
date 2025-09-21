@@ -1,0 +1,188 @@
+---
+title: "Founds_Research_Merge"
+author: "Nicky Chung"
+date: "2025-09-21"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Overview
+
+1.  Starting from grabbing data of Budget request and Appropriations from *National Science Foundation (NSF)*, the following diagram shows the relationship between the budget request and appropriation of the overall **total** and **Research & Related Activities**.
+2.  Diving into the sex distribution of people in STEM working on research grants.
+
+## NSF Budget request and Appropriations
+
+```{r, echo = FALSE}
+suppressMessages(library(plotly))
+suppressMessages(library(dplyr))
+
+#put data into data frame
+df <- data.frame(
+  `Fiscal Year` = c(2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 
+                    2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 
+                    2020, 2021, 2022, 2023, 2024, 2025),
+  
+  `Research & Related Activities (R&RA) Request` = c(3004.00, 3540.68, 3326.98, 3783.21, 4106.36, 4452.31, 4333.49, 4665.95, 5131.69, 5593.99,
+                                                      5733.24, 6018.83, 6253.54, 5983.28, 6212.29, 5807.46, 6186.30, 6425.44, 5361.65, 6150.68,
+                                                      5662.96, 6213.02, 8139.71, 8425.99, 9017.90, 8045.32),
+  
+  `Research & Related Activities (R&RA) Appropriation` = c(2972.90, 3356.29, 3612.26, 4069.29, 4262.12, 4229.98, 4339.21, 4654.24, 4841.73, 7686.17,
+                                                            5563.92, 5509.98, 5689.00, 5543.72, 5808.92, 5933.65, 5989.68, 6005.65, 6334.48, 6504.51,
+                                                            6789.80, 7347.48, 6999.52, 7826.80, NA, NA),
+  
+  `STEM Education (EDU) Request` = c(678, 729.01, 872.41, 908.08, 938.04, 771.36, 737, 816.22, 750.6, 790.41,
+                                     857.76, 892, 911.20, 875.61, 880.29, 889.75, 962.57, 952.86, 760.55, 873.37,
+                                     823.47, 930.93, 1287.27, 1377.18, 1496.18, 1300.00),
+  
+  `STEM Education (EDU) Appropriation` = c(690.87, 785.6, 894.28, 903.17, 938.98, 841.42, 796.69, 796.59, 765.6, 945.26,
+                                           872.76, 861.03, 829, 833.31, 846.5, 866, 878.97, 873.05, 902, 922,
+                                           942.55, 1029.00, 1149.46, 1371.00, NA, NA),
+  
+  `NSF, TOTAL Request` = c(3921.45, 4572.40, 4472.52, 5035.79, 5481.20, 5745.00, 5605.00, 6020.21, 6429.00, 6854.10,
+                           7045.00, 7424.40, 7767.00, 7373.10, 7625.78, 7255.00, 7723.55, 7964.02, 6652.89, 7472.00,
+                           7066.00, 7741.40, 10169.30, 10492.08, 11354.68, 10183.00),
+  
+  `NSF, TOTAL Appropriation` = c(3912.00, 4430.57, 4823.35, 5323.09, 5588.86, 5482.49, 5589.14, 5889.87, 6125.26, 9495.61,
+                                 6872.51, 6805.98, 7033.10, 6884.11, 7171.92, 7344.21, 7463.49, 7472.22, 7767.36, 8075.00,
+                                 8354.33, 9086.76, 8863.00, 9876.51, NA, NA),
+  
+  check.names = FALSE
+)
+
+```
+
+```{r clean-and-plot, message=FALSE, warning=FALSE, echo = FALSE}
+#data cleaning
+yr_raw <- as.character(df$`Fiscal Year`)
+
+#get rid of ARRA/plans entries in this dataset
+drop_idx <- grepl("ARRA", yr_raw, ignore.case = TRUE) | grepl("Plans", yr_raw, ignore.case = TRUE)
+df_clean <- df[!drop_idx, ]
+
+#extract 4-digit year
+year_num <- suppressWarnings(as.numeric(df_clean$`Fiscal Year`))
+
+#numerical columns (nsf_total & r&ra)
+nsf_app   <- suppressWarnings(as.numeric(df_clean$`NSF, TOTAL Appropriation`))
+nsf_req   <- suppressWarnings(as.numeric(df_clean$`NSF, TOTAL Request`))
+rra_app   <- suppressWarnings(as.numeric(df_clean$`Research & Related Activities (R&RA) Appropriation`))
+rra_req   <- suppressWarnings(as.numeric(df_clean$`Research & Related Activities (R&RA) Request`))
+
+#fill missing appropriations
+nsf_fill  <- ifelse(is.na(nsf_app),  nsf_req,  nsf_app)
+rra_fill <- ifelse(is.na(rra_app), rra_req, rra_app)
+
+#kwwp valid years w/ at least 1 val
+keep <- !is.na(year_num) & (!is.na(nsf_fill) | !is.na(rra_fill))
+yr   <- year_num[keep]
+nsf  <- nsf_fill[keep]
+stem <- rra_fill[keep]
+
+#sort
+o <- order(yr)
+yr <- yr[o]; nsf <- nsf[o]; stem <- stem[o]
+
+#covert to thousands
+nsf_m  <- nsf
+stem_m <- stem
+
+#chart (scattered line*2)
+plot_ly() %>%
+  add_trace(x = yr, y = nsf_m, type = "scatter", mode = "lines+markers",
+            name = "NSF Total",
+            line = list(color = "lightblue", width = 3),
+            marker = list(size = 6),
+            hovertemplate = "Year %{x}<br>NSF Total: $%{y:.2f}M<extra></extra>") %>%
+  add_trace(x = yr, y = rra_fill[keep][o], type = "scatter", mode = "lines+markers",
+            name = "Research & Related Activities",
+            line = list(color = "orange", width = 3),
+            marker = list(size = 6),
+            hovertemplate = "Year %{x}<br>R&RA: $%{y:.2f}M<extra></extra>") %>%
+  layout(title = list(text = "NSF Total vs Research & Related Activities",
+                      font = list(size = 16)),
+         xaxis = list(title = "Fiscal Year", dtick = 2, 
+                      range = c(1999, 2026)),
+         yaxis = list(title = "Budget (Millions USD)",
+                      tickformat = "$,.2f"),  # show 2 decimals with currency
+         legend = list(orientation = "h", x = 0.5, y = -0.15, 
+                       xanchor = 'center', yanchor = 'top'),
+         margin = list(t = 80, b = 120),
+         plot_bgcolor = 'white',
+         paper_bgcolor = 'white')
+```
+
+### Data Analysis / Observation
+
+-   R&RA and Total are *approximately proportional*
+
+-   R&RA consistently represents **70-80%** of the total NSF budget
+
+    -   *research activities* has the **largest proportion** in NSF's spending category
+
+## The Amount of Research Grants comparison between Female and Male
+
+```{r, echo = FALSE}
+suppressMessages(library(plotly))
+grant = read.csv('NDB_ResearchGrants_NIH.csv')
+```
+
+```{r, echo = FALSE}
+plot_ly(data = grant) %>%
+  add_trace(x = grant$Year, y = grant$Female, type = "bar", name = "Female",
+            marker = list(color = "lightblue")) %>%
+  add_trace(x = grant$Year, y = grant$Male, type = "bar", name = "Male",
+            marker = list(color = "lightgreen")) %>%
+  #trace percentage of female
+  add_trace(x = grant$Year, y = grant$Percentage.to.Female, type = "scatter", mode = "lines+markers",
+            name = "Percentage Female",
+            line = list(color = "orange"),
+            marker = list(color = "orange", size = 8),
+            yaxis = "y2",  # Set to secondary y-axis
+            hovertemplate = "Year: %{x}<br>Percentage Female: %{y}<extra></extra>") %>%
+
+  layout(title = "Research Grants Comparison between Female and Male",
+         xaxis = list(title = "Year"),
+         yaxis = list(title = "Number of Grants"),
+         yaxis2 = list(title = "Percentage Female", overlaying = "y", side = "right", 
+                       tickangle = 30, #rotated degree 
+                       ticksuffix = "%", #"%"
+                       tickvals = seq(0, 100, by = 10),  
+                       ticklen = 10,  #add space
+                       tickcolor = "orange"),  
+         barmode = "group",  #group: side-by-side bar
+         margin = list(t = 100, r = 100, b = 10, l = 60), #right margin space
+         legend = list(orientation = "h", x = 0, y = -0.2))
+```
+
+### Data analysis / Observation
+
+-   **Number of Female Grants**:
+
+    -   Increase from ***7,362*** in **1998** to ***20,201*** in **2024**
+
+-   **Number of Male Grants**:
+
+    -   Increase from ***24,877*** in **1998** to ***30,848*** in **2024**.
+
+-   **Percentage of Female Grants**:
+
+    -   The proportion increased significantly from ***23%*** in **1998** to ***40%*** in **2024**
+        -   Showing gender equality
+
+## Prediction
+
+Let's see when it will get to 50% in the "Percentage to Female"!
+
+-   it will be around **March 2044**!!
+
+# Let's set our goal!
+
+Try to test out your coding skills and get started!!
+
+-   (link) test your coding skill level with GeminiAI or see what coding skill to learn next!!
+
+-   (link) I'm a start learner! I wanna learn more about coding!
