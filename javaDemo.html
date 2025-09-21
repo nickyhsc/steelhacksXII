@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Gemini — Java Hello World (Short)</title>
+<style>
+  :root{--b:#e5e7eb;--m:#6b7280;--fg:#111827;--ok:#065f46;--err:#b91c1c}
+  body{font-family:system-ui,Arial,sans-serif;margin:22px;color:var(--fg);line-height:1.55}
+  h1{margin:0 0 10px} h2{margin:16px 0 8px}
+  .muted{color:var(--m)} .ok{color:var(--ok)} .err{color:var(--err)}
+  .card{border:1px solid var(--b);border-radius:12px;padding:14px;margin-top:14px;max-width:960px}
+  button,input,textarea{border:1px solid var(--b);border-radius:10px;padding:.55rem .8rem}
+  button{background:#111827;color:#fff;cursor:pointer}
+  pre{background:#fafafa;border:1px solid var(--b);border-radius:10px;padding:12px;overflow:auto}
+  textarea{width:100%;min-height:200px;font:13.5px/1.5 ui-monospace,Consolas,Menlo,monospace}
+</style>
+</head>
+<body>
+<h1>Learn Java: Hello World (Gemini)</h1>
+<div class="card">
+  <button id="teach">Teach (Gemini)</button>
+  <button id="insert" disabled>Insert Example</button>
+  <span id="status" class="muted"></span>
+  <div id="lesson" hidden>
+    <h2 id="t"></h2>
+    <div id="intro"></div>
+    <h3>Syntax & Class Setup</h3>
+    <ul id="syntax"></ul>
+    <h3>Example</h3>
+    <pre><code id="ex"></code></pre>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Your Turn</h2>
+  <p class="muted">Goal: valid Java class with <code>main</code> that prints "Hello, World!"</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0">
+    <button id="checkLocal">Quick local check</button>
+    <button id="checkLLM" disabled>Check with Gemini</button>
+  </div>
+  <textarea id="ed" placeholder="Type your Java program here..."></textarea>
+  <div id="local" class="muted" style="margin-top:6px"></div>
+  <div id="llm" class="muted" style="margin-top:6px"></div>
+</div>
+
+<script>
+const API_KEY = "AIzaSyA3ij2zQ80fyRtrcLIXz9pFHYW0dI6uhas"; // your existing key
+const MODEL = "gemini-2.5-flash";
+const q = s=>document.querySelector(s);
+const st = q('#status'), lessonBox=q('#lesson'), tt=q('#t'), intro=q('#intro'),
+      syn=q('#syntax'), ex=q('#ex'), ed=q('#ed'), local=q('#local'), llm=q('#llm');
+let lesson=null;
+
+async function callGemini(prompt){
+  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(API_KEY)}`,{
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({contents:[{role:"user",parts:[{text:prompt}]}],
+      generationConfig:{responseMimeType:"application/json"}})
+  });
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  const data=await r.json();
+  const text=data?.candidates?.[0]?.content?.parts?.[0]?.text||"";
+  try{ return JSON.parse(text); }catch{
+    const m=text.match(/```json\s*([\s\S]*?)```/i)||text.match(/```\s*([\s\S]*?)```/);
+    if(m){ try{ return JSON.parse(m[1]); }catch{} }
+    return null;
+  }
+}
+
+q('#teach').onclick = async ()=>{
+  st.textContent="Asking Gemini…"; q('#teach').disabled=true; q('#insert').disabled=true; q('#checkLLM').disabled=true;
+  const prompt = `
+Return JSON ONLY:
+{
+ "title":"string",
+ "intro":["1 short paragraph on what coding is + tiny history (ENIAC→C→Java→today)", "1 short paragraph on how code becomes programs (compile/JVM)"],
+ "syntax":["class block with braces","main signature","println","semicolons","strings in quotes"],
+ "example_code":"minimal Java Hello World (compilable)"
+}
+Keep it concise and beginner-friendly. Use plain text sentences; no markdown fences.`;
+  try{
+    const j=await callGemini(prompt);
+    if(!j||!j.title||!j.intro||!j.syntax||!j.example_code) throw new Error("Bad format");
+    lesson=j; lessonBox.hidden=false; tt.textContent=j.title;
+    intro.innerHTML = j.intro.map(x=>`<p>${escape(x)}</p>`).join("");
+    syn.innerHTML = j.syntax.map(x=>`<li>${escape(x)}</li>`).join("");
+    ex.textContent = j.example_code;
+    q('#insert').disabled=false; q('#checkLLM').disabled=false;
+    st.textContent="Lesson ready.";
+  }catch(e){ st.textContent="Gemini error."; console.error(e); }
+  q('#teach').disabled=false;
+};
+
+q('#insert').onclick=()=>{ if(lesson?.example_code){ ed.value=lesson.example_code; local.textContent="Inserted example."; }};
+
+q('#checkLocal').onclick=()=>{
+  const code = ed.value;
+  const okPublicClass = /public\s+class\s+[A-Za-z_]\w*/.test(code);
+  const okMain = /(public\s+)?(static\s+)?void\s+main\s*\(\s*String(\s*(\[\s*\]|\.\.\.))?\s*\w*\s*\)/.test(code);
+  const okPrint = /System\s*\.\s*out\s*\.\s*println\s*\(/.test(code);
+  const okHello = /println\s*\(\s*"(?:[^"]*hello[^"]*world[^"]*)"[^)]*\)\s*;/i.test(code);
+  const okBraces = (code.match(/{/g)||[]).length === (code.match(/}/g)||[]).length;
+  const okSemi = /;/.test(code);
+  const pass = okPublicClass&&okMain&&okPrint&&okHello&&okBraces&&okSemi;
+  local.innerHTML = (pass?'<span class="ok">Local check passed.</span>':'<span class="err">Local check failed.</span>')
+    + `<div>${row(okPublicClass,"public class ...")}${row(okMain,"main signature")}${row(okPrint,"System.out.println")}${row(okHello,'"Hello, World!" text')}${row(okBraces,"balanced braces")}${row(okSemi,"semicolons")}</div>`;
+};
+function row(ok,label){ return `<div class="${ok?'ok':'err'}">${ok?'✓':'✗'} ${escape(label)}</div>`; }
+
+q('#checkLLM').onclick = async ()=>{
+  const code=ed.value.trim(); if(!code){ llm.innerHTML='<span class="err">Type code first.</span>'; return; }
+  llm.textContent="Gemini grading…"; q('#checkLLM').disabled=true;
+  const rubric = `
+Return JSON ONLY:
+{"pass":true|false,"summary":"one sentence","issues":["..."],"checks":{"public_class":t/f,"main_method":t/f,"println":t/f,"hello_world":t/f,"braces":t/f,"semicolons":t/f}}
+Grade beginner Java Hello World without executing. PASS if it would compile and print "Hello, World!" once. Accept String[] or String... args, any class name.
+=== CODE ===
+${code}
+=== END ===`;
+  try{
+    const j=await callGemini(rubric);
+    if(!j||typeof j.pass!=='boolean'){ throw new Error("Bad format"); }
+    const badge = j.pass? `<div class="ok"><b>PASS</b> — ${escape(j.summary||"")}</div>` : `<div class="err"><b>NOT YET</b> — ${escape(j.summary||"")}</div>`;
+    const checks=j.checks||{};
+    llm.innerHTML = badge +
+      `<div style="margin-top:6px">${Object.entries(checks).map(([k,v])=>`<div class="${v?'ok':'err'}">${v?'✓':'✗'} ${escape(k.replaceAll('_',' '))}</div>`).join("")}</div>` +
+      (j.issues?.length? `<h4 style="margin:6px 0 4px">Issues</h4><div>• ${j.issues.map(escape).join("<br/>• ")}</div>`:"");
+  }catch(e){ llm.innerHTML = `<span class="err">Gemini error.</span>`; console.error(e); }
+  q('#checkLLM').disabled=false;
+};
+
+function escape(s){return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");}
+</script>
+</body>
+</html>
